@@ -26,10 +26,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: [
-    'react',
-    'react-hooks',
-  ],
+  plugins: ['react', 'react-hooks'],
   settings: {
     react: {
       version: 'latest',
