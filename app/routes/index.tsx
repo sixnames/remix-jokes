@@ -1,7 +1,31 @@
-import * as React from 'react';
+import type { LinksFunction } from 'remix';
+import { Link } from 'remix';
+import stylesUrl from '../styles/index.css';
 
-const Index: React.FC = () => {
-  return <div>Hello Index Route</div>;
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: 'stylesheet',
+      href: stylesUrl,
+    },
+  ];
 };
 
-export default Index;
+export default function Index() {
+  return (
+    <div className='container'>
+      <div className='content'>
+        <h1>
+          Remix <span>Jokes!</span>
+        </h1>
+        <nav>
+          <ul>
+            <li>
+              <Link to='jokes'>Read Jokes</Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  );
+}
