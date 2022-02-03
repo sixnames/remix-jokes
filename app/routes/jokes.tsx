@@ -1,6 +1,9 @@
-import type { LinksFunction } from 'remix';
-import { Outlet, Link } from 'remix';
+import type { LinksFunction, LoaderFunction } from 'remix';
+import { Outlet, Link, useLoaderData } from 'remix';
 import stylesUrl from '../styles/jokes.css';
+import { getDatabase } from '../db/db.server';
+import { JokeModel } from '../db/dbModels';
+import { COL_JOKES } from '../db/collectionNames';
 
 export const links: LinksFunction = () => {
   return [
@@ -11,7 +14,42 @@ export const links: LinksFunction = () => {
   ];
 };
 
+type LoaderData = {
+  jokeListItems: Array<{ _id: string; name: string }>;
+};
+
+export const loader: LoaderFunction = async () => {
+  const { db } = await getDatabase();
+  const jokesCollection = await db.collection<JokeModel>(COL_JOKES);
+  const jokes = await jokesCollection
+    .find(
+      {},
+      {
+        projection: {
+          _id: true,
+          name: true,
+        },
+        limit: 5,
+        sort: {
+          _id: -1,
+        },
+      },
+    )
+    .toArray();
+  const data: LoaderData = {
+    jokeListItems: jokes.map(({ _id, name }) => {
+      return {
+        _id: _id.toHexString(),
+        name,
+      };
+    }),
+  };
+  return data;
+};
+
 export default function JokesRoute() {
+  const data = useLoaderData<LoaderData>();
+
   return (
     <div className='jokes-layout'>
       <header className='jokes-header'>
@@ -30,9 +68,11 @@ export default function JokesRoute() {
             <Link to='.'>Get a random joke</Link>
             <p>Here are a few more jokes to check out:</p>
             <ul>
-              <li>
-                <Link to='some-joke-id'>Hippo</Link>
-              </li>
+              {data.jokeListItems.map((joke) => (
+                <li key={joke._id}>
+                  <Link to={joke._id}>{joke.name}</Link>
+                </li>
+              ))}
             </ul>
             <Link to='new' className='button'>
               Add your own
