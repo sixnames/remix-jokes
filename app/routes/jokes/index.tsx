@@ -1,8 +1,47 @@
+import * as React from 'react';
+import { JokeModel } from '../../db/dbModels';
+import { Link, LoaderFunction, useLoaderData } from 'remix';
+import { getDatabase } from '../../db/db.server';
+import { COL_JOKES } from '../../db/collectionNames';
+
+type LoaderData = { randomJoke?: JokeModel };
+
+export const loader: LoaderFunction = async () => {
+  const { db } = await getDatabase();
+  const jokesCollection = db.collection<JokeModel>(COL_JOKES);
+
+  const count = await jokesCollection.countDocuments();
+  const randomNumber = Math.floor(Math.random() * count);
+
+  const [randomJoke] = await jokesCollection
+    .find(
+      {},
+      {
+        limit: 1,
+        skip: randomNumber,
+      },
+    )
+    .toArray();
+
+  return {
+    randomJoke,
+  };
+};
+
 export default function JokesIndexRoute() {
+  const data = useLoaderData<LoaderData>();
+
   return (
     <div>
       <p>Here's a random joke:</p>
-      <p>I was wondering why the frisbee was getting bigger, then it hit me.</p>
+      {data.randomJoke ? (
+        <React.Fragment>
+          <p>{data.randomJoke.content}</p>
+          <Link to={`${data.randomJoke._id}`}>"{data.randomJoke.name}" Permalink</Link>
+        </React.Fragment>
+      ) : (
+        <p>No jokes for you</p>
+      )}
     </div>
   );
 }

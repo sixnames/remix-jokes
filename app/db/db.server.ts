@@ -19,10 +19,6 @@ export async function getDatabase(): Promise<GetDbPayloadInterface> {
 
   const uri = process.env.MONGO_URL;
   const dbName = process.env.MONGO_DB_NAME;
-  console.log({
-    uri,
-    dbName,
-  });
 
   if (!uri || !dbName) {
     throw new Error('Unable to connect to database, no URI provided');
