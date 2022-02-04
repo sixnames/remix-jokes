@@ -61,8 +61,18 @@ export const action: ActionFunction = async ({ request }) => {
     updatedAt: new Date(),
     createdAt: new Date(),
   });
+  const createdJoke = await jokesCollection.findOne({
+    _id: createdJokeResult.insertedId,
+  });
+  if (!createdJokeResult.acknowledged || !createdJoke) {
+    const errorData: ActionData = {
+      fields,
+      formError: 'Joke create error',
+    };
+    return json(errorData, { status: 400 });
+  }
 
-  return redirect(`/jokes/${createdJokeResult.insertedId}`);
+  return redirect(`/jokes/${createdJoke._id}`);
 };
 
 export default function NewJokeRoute() {
@@ -105,6 +115,13 @@ export default function NewJokeRoute() {
             </p>
           ) : null}
         </div>
+
+        {actionData?.formError ? (
+          <p className='form-validation-error' role='alert' id='form-error'>
+            {actionData.formError}
+          </p>
+        ) : null}
+
         <div>
           <button type='submit' className='button'>
             Add
