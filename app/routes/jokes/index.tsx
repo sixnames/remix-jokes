@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { JokeModel } from '../../db/dbModels';
 import { Link, LoaderFunction, useLoaderData } from 'remix';
-import { getDbCollections } from '../../db/dbCollections.server';
+import { getDbCollections } from '../../db/db.server';
 
 type LoaderData = { randomJoke?: JokeModel };
 

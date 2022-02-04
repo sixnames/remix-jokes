@@ -1,7 +1,7 @@
 import { JokeModel } from '../../db/dbModels';
 import { Link, LoaderFunction, useLoaderData } from 'remix';
 import { ObjectId } from 'mongodb';
-import { getDbCollections } from '../../db/dbCollections.server';
+import { getDbCollections } from '../../db/db.server';
 
 type LoaderData = { joke: JokeModel };
 

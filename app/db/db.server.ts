@@ -1,4 +1,6 @@
-import { MongoClient, Db, Collection } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
+import { JokeModel, UserModel } from './dbModels';
+import { COL_JOKES, COL_USERS } from './collectionNames';
 
 interface GetDbPayloadInterface {
   db: Db;
@@ -43,4 +45,17 @@ export async function getDatabase(): Promise<GetDbPayloadInterface> {
   // cache the database connection and return the connection
   global.__db = payload;
   return payload;
+}
+
+interface DbCollectionsPayloadInterface {
+  jokesCollection: () => Collection<JokeModel>;
+  usersCollection: () => Collection<UserModel>;
+}
+
+export async function getDbCollections(): Promise<DbCollectionsPayloadInterface> {
+  const { db } = await getDatabase();
+  return {
+    jokesCollection: () => db.collection<JokeModel>(COL_JOKES),
+    usersCollection: () => db.collection<UserModel>(COL_USERS),
+  };
 }
