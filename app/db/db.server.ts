@@ -1,16 +1,8 @@
 import { MongoClient, Db, Collection } from 'mongodb';
-import { COL_JOKES, COL_USERS } from './collectionNames';
-import { JokeModel, UserModel } from './dbModels';
-
-interface GetDbPayloadCollectionsInterface {
-  jokesCollection: () => Collection<JokeModel>;
-  usersCollection: () => Collection<UserModel>;
-}
 
 interface GetDbPayloadInterface {
   db: Db;
   client: MongoClient;
-  collections: GetDbPayloadCollectionsInterface;
 }
 
 // create cached connection variable
@@ -46,10 +38,6 @@ export async function getDatabase(): Promise<GetDbPayloadInterface> {
   const payload: GetDbPayloadInterface = {
     db,
     client,
-    collections: {
-      jokesCollection: () => db.collection<JokeModel>(COL_JOKES),
-      usersCollection: () => db.collection<UserModel>(COL_USERS),
-    },
   };
 
   // cache the database connection and return the connection

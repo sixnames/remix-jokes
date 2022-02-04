@@ -1,7 +1,7 @@
 import type { LinksFunction, LoaderFunction } from 'remix';
 import { Outlet, Link, useLoaderData } from 'remix';
 import stylesUrl from '../styles/jokes.css';
-import { getDatabase } from '../db/db.server';
+import { getDbCollections } from '../db/dbCollections.server';
 
 export const links: LinksFunction = () => {
   return [
@@ -17,7 +17,7 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async () => {
-  const { collections } = await getDatabase();
+  const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
   const jokes = await jokesCollection
     .find(
