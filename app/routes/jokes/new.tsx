@@ -1,24 +1,8 @@
-import { ActionFunction, redirect, json, useActionData } from 'remix';
+import { ActionFunction, json, redirect, useActionData } from 'remix';
 import { ObjectId } from 'mongodb';
 import { getDbCollections } from '../../db/db.server';
-
-function validateJokeContent(content: FormDataEntryValue | null) {
-  if (typeof content !== 'string') {
-    return `Content field is required`;
-  }
-  if (content.length < 10) {
-    return `That joke is too short`;
-  }
-}
-
-function validateJokeName(name: FormDataEntryValue | null) {
-  if (typeof name !== 'string') {
-    return `Name field is required`;
-  }
-  if (name.length < 2) {
-    return `That joke's name is too short`;
-  }
-}
+import { getFormDataStringField } from '../../lib/formDataUtils';
+import { validateStringField } from '../../lib/validation';
 
 type ActionData = {
   formError?: string;
@@ -32,29 +16,48 @@ type ActionData = {
   };
 };
 
-const badRequest = (data: ActionData) => json(data, { status: 400 });
-
 export const action: ActionFunction = async ({ request }) => {
   const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
-  const form = await request.formData();
-  const name = form.get('name');
-  const content = form.get('content');
+  const formData = await request.formData();
+  const name = getFormDataStringField({
+    formData,
+    fieldName: 'name',
+  });
+  const content = getFormDataStringField({
+    formData,
+    fieldName: 'content',
+  });
 
   // validate input
   const fieldErrors = {
-    name: validateJokeName(name),
-    content: validateJokeContent(content),
+    name: validateStringField({
+      value: name,
+      minLength: 2,
+      message: `That joke's name is too short`,
+    }),
+    content: validateStringField({
+      value: content,
+      minLength: 10,
+      message: `That joke is too short`,
+    }),
+  };
+  const fields = {
+    name,
+    content,
   };
   if (Object.values(fieldErrors).some(Boolean)) {
-    return badRequest({ fieldErrors });
+    const errorData: ActionData = {
+      fieldErrors,
+      fields,
+    };
+    return json(errorData, { status: 400 });
   }
 
   // create
   const createdJokeResult = await jokesCollection.insertOne({
     _id: new ObjectId(),
-    name: `${name}`,
-    content: `${content}`,
+    ...fields,
     updatedAt: new Date(),
     createdAt: new Date(),
   });
