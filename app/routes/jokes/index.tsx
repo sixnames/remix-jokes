@@ -2,14 +2,12 @@ import * as React from 'react';
 import { JokeModel } from '../../db/dbModels';
 import { Link, LoaderFunction, useLoaderData } from 'remix';
 import { getDatabase } from '../../db/db.server';
-import { COL_JOKES } from '../../db/collectionNames';
 
 type LoaderData = { randomJoke?: JokeModel };
 
 export const loader: LoaderFunction = async () => {
-  const { db } = await getDatabase();
-  const jokesCollection = db.collection<JokeModel>(COL_JOKES);
-
+  const { collections } = await getDatabase();
+  const jokesCollection = collections.jokesCollection();
   const count = await jokesCollection.countDocuments();
   const randomNumber = Math.floor(Math.random() * count);
 

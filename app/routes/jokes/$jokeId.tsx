@@ -1,14 +1,13 @@
 import { JokeModel } from '../../db/dbModels';
 import { Link, LoaderFunction, useLoaderData } from 'remix';
 import { getDatabase } from '../../db/db.server';
-import { COL_JOKES } from '../../db/collectionNames';
 import { ObjectId } from 'mongodb';
 
 type LoaderData = { joke: JokeModel };
 
 export const loader: LoaderFunction = async ({ params }) => {
-  const { db } = await getDatabase();
-  const jokesCollection = db.collection<JokeModel>(COL_JOKES);
+  const { collections } = await getDatabase();
+  const jokesCollection = collections.jokesCollection();
   const joke = await jokesCollection.findOne({
     _id: new ObjectId(params.jokeId),
   });
