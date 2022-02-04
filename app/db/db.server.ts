@@ -1,18 +1,19 @@
-// noinspection ES6ConvertVarToLetConst
-import { MongoClient, Db } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
+import { JokeModel, UserModel } from './dbModels';
+import { COL_JOKES, COL_USERS } from './collectionNames';
 
 interface GetDbPayloadInterface {
   db: Db;
   client: MongoClient;
 }
 
-// Create cached connection variable
+// create cached connection variable
 declare global {
   var __db: GetDbPayloadInterface | undefined;
 }
 
 export async function getDatabase(): Promise<GetDbPayloadInterface> {
-  // If the database connection is cached, use it instead of creating a new connection
+  // if the database connection is cached, use it instead of creating a new connection
   if (global.__db) {
     return global.__db;
   }
@@ -27,25 +28,34 @@ export async function getDatabase(): Promise<GetDbPayloadInterface> {
   const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    // authSource: process.env.MONGO_DB_NAME,
+    authSource: process.env.MONGO_DB_AUTH_SOURCE,
   };
 
-  // If no connection is cached, create a new one
-  // TODO resolve mongodb typescript warnings
-  // @ts-ignore
+  // if no connection is cached, create a new one
   const client = await MongoClient.connect(uri, options);
 
-  // Select the database through the connection
-  // @ts-ignore
+  // select the database through the connection
   const db = await client.db(dbName);
 
   const payload: GetDbPayloadInterface = {
-    // @ts-ignore
-    client,
     db,
+    client,
   };
 
-  // Cache the database connection and return the connection
+  // cache the database connection and return the connection
   global.__db = payload;
   return payload;
+}
+
+interface DbCollectionsPayloadInterface {
+  jokesCollection: () => Collection<JokeModel>;
+  usersCollection: () => Collection<UserModel>;
+}
+
+export async function getDbCollections(): Promise<DbCollectionsPayloadInterface> {
+  const { db } = await getDatabase();
+  return {
+    jokesCollection: () => db.collection<JokeModel>(COL_JOKES),
+    usersCollection: () => db.collection<UserModel>(COL_USERS),
+  };
 }

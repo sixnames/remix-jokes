@@ -15,3 +15,7 @@ export interface JokeModel extends TimeStampInterface {
   name: string;
   content: string;
 }
+
+export interface UserModel {
+  _id: ObjectIdModel;
+}
