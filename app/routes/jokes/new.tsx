@@ -1,8 +1,9 @@
 import { ActionFunction, json, redirect, useActionData } from 'remix';
 import { ObjectId } from 'mongodb';
 import { getDbCollections } from '../../db/db.server';
-import { getFormDataStringField } from '../../lib/formDataUtils';
-import { validateStringField } from '../../lib/validation';
+import { getFormDataStringField } from '../../utils/formDataUtils';
+import { validateStringField } from '../../utils/validation';
+import { requireUserId } from '../../utils/session.server';
 
 type ActionData = {
   formError?: string;
@@ -17,6 +18,7 @@ type ActionData = {
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const userId = await requireUserId(request);
   const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
   const formData = await request.formData();
@@ -58,6 +60,7 @@ export const action: ActionFunction = async ({ request }) => {
   const createdJokeResult = await jokesCollection.insertOne({
     _id: new ObjectId(),
     ...fields,
+    jokesterId: userId,
     updatedAt: new Date(),
     createdAt: new Date(),
   });

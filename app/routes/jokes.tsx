@@ -2,6 +2,8 @@ import type { LinksFunction, LoaderFunction } from 'remix';
 import { Outlet, Link, useLoaderData } from 'remix';
 import stylesUrl from '../styles/jokes.css';
 import { getDbCollections } from '../db/db.server';
+import { UserModel } from '../db/dbModels';
+import { getUser } from '../utils/session.server';
 
 export const links: LinksFunction = () => {
   return [
@@ -13,10 +15,11 @@ export const links: LinksFunction = () => {
 };
 
 type LoaderData = {
+  user: UserModel | null;
   jokeListItems: Array<{ _id: string; name: string }>;
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
   const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
   const jokes = await jokesCollection
@@ -34,7 +37,11 @@ export const loader: LoaderFunction = async () => {
       },
     )
     .toArray();
+
+  const user = await getUser(request);
+
   const data: LoaderData = {
+    user,
     jokeListItems: jokes.map(({ _id, name }) => {
       return {
         _id: _id.toHexString(),
@@ -58,6 +65,18 @@ export default function JokesRoute() {
               <span className='logo-medium'>J🤪KES</span>
             </Link>
           </h1>
+          {data.user ? (
+            <div className='user-info'>
+              <span>{`Hi ${data.user.username}`}</span>
+              <form action='/logout' method='post'>
+                <button type='submit' className='button'>
+                  Logout
+                </button>
+              </form>
+            </div>
+          ) : (
+            <Link to='/login'>Login</Link>
+          )}
         </div>
       </header>
       <main className='jokes-main'>

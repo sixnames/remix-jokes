@@ -2,8 +2,6 @@ import { ObjectId } from 'mongodb';
 
 export type DateModel = Date;
 export type ObjectIdModel = ObjectId;
-export type EmailAddressModel = string;
-export type PhoneNumberModel = string;
 
 export interface TimeStampInterface {
   createdAt: DateModel;
@@ -14,8 +12,11 @@ export interface JokeModel extends TimeStampInterface {
   _id: ObjectIdModel;
   name: string;
   content: string;
+  jokesterId: ObjectIdModel;
 }
 
-export interface UserModel {
+export interface UserModel extends TimeStampInterface {
   _id: ObjectIdModel;
+  username: string;
+  passwordHash: string;
 }
