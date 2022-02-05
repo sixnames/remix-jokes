@@ -1,17 +1,34 @@
-import { getDatabase } from './db.server';
-import { JokeModel } from './dbModels';
-import { COL_JOKES } from './collectionNames';
+import { getDatabase, getDbCollections } from './db.server';
 import { ObjectId } from 'mongodb';
 require('dotenv').config();
 
 (async function seedTestDb() {
   try {
-    const { db, client } = await getDatabase();
-    const jokesCollection = db.collection<JokeModel>(COL_JOKES);
+    const { client } = await getDatabase();
+    const collections = await getDbCollections();
+    const jokesCollection = collections.jokesCollection();
+    const usersCollection = collections.usersCollection();
+
+    // seed users
+    console.log('seeding users');
+    await usersCollection.deleteMany({});
+    const jokesterId = new ObjectId();
+    const createdUserResult = await usersCollection.insertOne({
+      _id: jokesterId,
+      username: 'kody',
+      // this is a hashed version of "twixrox"
+      passwordHash: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // seed jokes
+    console.log('seeding jokes');
     await jokesCollection.deleteMany({});
     await jokesCollection.insertMany([
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Road worker',
@@ -19,6 +36,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Frisbee',
@@ -26,6 +44,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Trees',
@@ -33,6 +52,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Skeletons',
@@ -40,6 +60,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Hippos',
@@ -47,6 +68,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Dinner',
@@ -54,6 +76,7 @@ require('dotenv').config();
       },
       {
         _id: new ObjectId(),
+        jokesterId,
         createdAt: new Date(),
         updatedAt: new Date(),
         name: 'Elevator',
