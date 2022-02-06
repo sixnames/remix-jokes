@@ -69,7 +69,7 @@ export function CatchBoundary() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
+export function ErrorBoundary({ error, ...rest }: { error: Error }) {
   return (
     <Document title='Uh-oh!'>
       <div className='error-container'>
