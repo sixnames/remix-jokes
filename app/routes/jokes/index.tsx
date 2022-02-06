@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { JokeModel } from '../../db/dbModels';
 import { Link, LoaderFunction, useCatch, useLoaderData } from 'remix';
 import { getDbCollections } from '../../db/db.server';
 import { JokeInterface } from '../../db/uiInterfaces';
