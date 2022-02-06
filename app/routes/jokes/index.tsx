@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { JokeModel } from '../../db/dbModels';
-import { Link, LoaderFunction, useLoaderData } from 'remix';
+import { Link, LoaderFunction, useCatch, useLoaderData } from 'remix';
 import { getDbCollections } from '../../db/db.server';
+import { JokeInterface } from '../../db/uiInterfaces';
 
-type LoaderData = { randomJoke?: JokeModel };
+type LoaderData = { randomJoke: JokeInterface };
 
 export const loader: LoaderFunction = async () => {
   const collections = await getDbCollections();
@@ -21,6 +22,12 @@ export const loader: LoaderFunction = async () => {
     )
     .toArray();
 
+  if (!randomJoke) {
+    throw new Response('No random joke found', {
+      status: 404,
+    });
+  }
+
   return {
     randomJoke,
   };
@@ -32,14 +39,21 @@ export default function JokesIndexRoute() {
   return (
     <div>
       <p>Here's a random joke:</p>
-      {data.randomJoke ? (
-        <React.Fragment>
-          <p>{data.randomJoke.content}</p>
-          <Link to={`${data.randomJoke._id}`}>"{data.randomJoke.name}" Permalink</Link>
-        </React.Fragment>
-      ) : (
-        <p>No jokes for you</p>
-      )}
+      <p>{data.randomJoke.content}</p>
+      <Link to={data.randomJoke._id}>"{data.randomJoke.name}" Permalink</Link>
     </div>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  if (caught.status === 404) {
+    return <div className='error-container'>There are no jokes to display.</div>;
+  }
+  throw new Error(`Unexpected caught response with status: ${caught.status}`);
+}
+
+export function ErrorBoundary() {
+  return <div className='error-container'>I did a whoopsies.</div>;
 }

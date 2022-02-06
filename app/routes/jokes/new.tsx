@@ -1,9 +1,17 @@
-import { ActionFunction, json, redirect, useActionData } from 'remix';
+import {
+  ActionFunction,
+  json,
+  Link,
+  LoaderFunction,
+  redirect,
+  useActionData,
+  useCatch,
+} from 'remix';
 import { ObjectId } from 'mongodb';
 import { getDbCollections } from '../../db/db.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
 import { validateStringField } from '../../utils/validation';
-import { requireUserId } from '../../utils/session.server';
+import { getUserId, requireUserId } from '../../utils/session.server';
 
 type ActionData = {
   formError?: string;
@@ -15,6 +23,14 @@ type ActionData = {
     name: string;
     content: string;
   };
+};
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const userId = await getUserId(request);
+  if (!userId) {
+    throw new Response('Unauthorized', { status: 401 });
+  }
+  return {};
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -133,4 +149,21 @@ export default function NewJokeRoute() {
       </form>
     </div>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  if (caught.status === 401) {
+    return (
+      <div className='error-container'>
+        <p>You must be logged in to create a joke.</p>
+        <Link to='/login'>Login</Link>
+      </div>
+    );
+  }
+}
+
+export function ErrorBoundary() {
+  return <div className='error-container'>Something unexpected went wrong. Sorry about that.</div>;
 }

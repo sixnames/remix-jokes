@@ -12,12 +12,14 @@ require('dotenv').config();
     // seed users
     console.log('seeding users');
     await usersCollection.deleteMany({});
+
+    // this is a hashed version of "twixrox"
+    const passwordHash = '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u';
     const jokesterId = new ObjectId();
-    const createdUserResult = await usersCollection.insertOne({
+    await usersCollection.insertOne({
       _id: jokesterId,
       username: 'kody',
-      // this is a hashed version of "twixrox"
-      passwordHash: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u',
+      passwordHash,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
