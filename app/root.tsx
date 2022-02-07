@@ -9,26 +9,13 @@ import {
   useCatch,
   Meta,
 } from 'remix';
-
-import globalStylesUrl from './styles/global.css';
-import globalMediumStylesUrl from './styles/global-medium.css';
-import globalLargeStylesUrl from './styles/global-large.css';
+import stylesLink from './styles/tailwind.min.css';
 
 export const links: LinksFunction = () => {
   return [
     {
       rel: 'stylesheet',
-      href: globalStylesUrl,
-    },
-    {
-      rel: 'stylesheet',
-      href: globalMediumStylesUrl,
-      media: 'print, (min-width: 640px)',
-    },
-    {
-      rel: 'stylesheet',
-      href: globalLargeStylesUrl,
-      media: 'screen and (min-width: 1024px)',
+      href: stylesLink,
     },
   ];
 };
@@ -79,12 +66,14 @@ export default function App() {
   );
 }
 
+const errorClassName = 'bg-red text-white';
+
 export function CatchBoundary() {
   const caught = useCatch();
 
   return (
     <Document title={`${caught.status} ${caught.statusText}`}>
-      <div className='error-container'>
+      <div className={errorClassName}>
         <h1>
           {caught.status} {caught.statusText}
         </h1>
@@ -96,7 +85,7 @@ export function CatchBoundary() {
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
     <Document title='Uh-oh!'>
-      <div className='error-container'>
+      <div className={errorClassName}>
         <h1>App Error</h1>
         <pre>{error.message}</pre>
       </div>

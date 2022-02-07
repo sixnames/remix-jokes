@@ -4,8 +4,11 @@
   "description": "",
   "license": "",
   "scripts": {
-    "build": "remix build",
-    "dev": "node -r dotenv/config node_modules/.bin/remix dev",
+    "build": "npm run build:css && remix build",
+    "build:css": "tailwindcss -i ./app/styles/tailwind.css -o ./app/styles/tailwind.min.css --minify",
+    "dev": "concurrently \"npm run dev:css\" \"npm run remix-dev\"",
+    "remix-dev": "node -r dotenv/config node_modules/.bin/remix dev",
+    "dev:css": "tailwindcss -i ./app/styles/tailwind.css -o ./app/styles/tailwind.min.css --watch",
     "postinstall": "remix setup node",
     "start": "remix-serve build",
     "seed-db": "node --require esbuild-register app/db/seed.ts"
@@ -26,6 +29,7 @@
     "@types/react-dom": "^17.0.9",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
+    "concurrently": "^7.0.0",
     "dotenv": "^16.0.0",
     "esbuild-register": "^3.3.2",
     "eslint": "^7.22.0",
@@ -39,6 +43,7 @@
     "eslint-plugin-react-app": "^6.2.2",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.5.1",
+    "tailwindcss": "^3.0.18",
     "typescript": "^4.1.2"
   },
   "engines": {
