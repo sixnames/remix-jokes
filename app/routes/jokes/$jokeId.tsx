@@ -1,8 +1,6 @@
 import { JokeModel } from '../../db/dbModels';
 import {
   ActionFunction,
-  Form,
-  Link,
   LoaderFunction,
   MetaFunction,
   redirect,
@@ -13,8 +11,9 @@ import {
 import { getDbCollections, GetObjectId } from '../../db/db.server';
 import { getUserId, requireUserId } from '../../utils/session.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
+import { JokeDisplay } from '../../components/joke';
 
-export const meta: MetaFunction = ({ data }: { data: LoaderData | undefined }) => {
+export const meta: MetaFunction = ({ data }: { data: JokeRouteDataInterface | undefined }) => {
   if (!data) {
     return {
       title: 'No joke',
@@ -28,8 +27,8 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData | undefined }) =
   };
 };
 
-interface LoaderData {
-  joke: JokeModel;
+export interface JokeRouteDataInterface {
+  joke: Pick<JokeModel, 'content' | 'name'>;
   isOwner: boolean;
 }
 
@@ -45,8 +44,11 @@ export const loader: LoaderFunction = async ({ params, request }) => {
     throw new Error('Joke not found');
   }
 
-  const data: LoaderData = {
-    joke,
+  const data: JokeRouteDataInterface = {
+    joke: {
+      content: joke.content,
+      name: joke.name,
+    },
     isOwner: !userId || joke.jokesterId.equals(userId),
   };
   return data;
@@ -85,23 +87,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function JokeRoute() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<JokeRouteDataInterface>();
 
-  return (
-    <div>
-      <p>Here's your hilarious joke:</p>
-      <p>{data.joke.content}</p>
-      <Link to='.'>{data.joke.name} Permalink</Link>
-      {data.isOwner ? (
-        <Form method='post'>
-          <input type='hidden' name='_method' value='delete' />
-          <button type='submit' className='button'>
-            Delete
-          </button>
-        </Form>
-      ) : null}
-    </div>
-  );
+  return <JokeDisplay joke={data.joke} isOwner={data.isOwner} />;
 }
 
 export function CatchBoundary() {
