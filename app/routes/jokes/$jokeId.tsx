@@ -1,20 +1,34 @@
 import { JokeModel } from '../../db/dbModels';
 import {
   ActionFunction,
-  Link,
   LoaderFunction,
+  MetaFunction,
   redirect,
   useCatch,
   useLoaderData,
   useParams,
 } from 'remix';
-import { ObjectId } from 'mongodb';
-import { getDbCollections } from '../../db/db.server';
+import { getDbCollections, GetObjectId } from '../../db/db.server';
 import { getUserId, requireUserId } from '../../utils/session.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
+import { JokeDisplay } from '../../components/joke';
 
-interface LoaderData {
-  joke: JokeModel;
+export const meta: MetaFunction = ({ data }: { data: JokeRouteDataInterface | undefined }) => {
+  if (!data) {
+    return {
+      title: 'No joke',
+      description: 'No joke found',
+    };
+  }
+
+  return {
+    title: `"${data.joke.name}" joke`,
+    description: `Enjoy the "${data.joke.name}" joke and much more`,
+  };
+};
+
+export interface JokeRouteDataInterface {
+  joke: Pick<JokeModel, 'content' | 'name'>;
   isOwner: boolean;
 }
 
@@ -23,15 +37,18 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
   const joke = await jokesCollection.findOne({
-    _id: new ObjectId(params.jokeId),
+    _id: new GetObjectId(`${params.jokeId}`),
   });
 
   if (!joke) {
     throw new Error('Joke not found');
   }
 
-  const data: LoaderData = {
-    joke,
+  const data: JokeRouteDataInterface = {
+    joke: {
+      content: joke.content,
+      name: joke.name,
+    },
     isOwner: !userId || joke.jokesterId.equals(userId),
   };
   return data;
@@ -47,7 +64,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   });
   if (method === 'delete') {
     const userId = await requireUserId(request);
-    const jokeId = new ObjectId(params.jokeId);
+    const jokeId = new GetObjectId(params.jokeId);
 
     const joke = await jokesCollection.findOne({
       _id: jokeId,
@@ -70,23 +87,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function JokeRoute() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<JokeRouteDataInterface>();
 
-  return (
-    <div>
-      <p>Here's your hilarious joke:</p>
-      <p>{data.joke.content}</p>
-      <Link to='.'>{data.joke.name} Permalink</Link>
-      {data.isOwner ? (
-        <form method='post'>
-          <input type='hidden' name='_method' value='delete' />
-          <button type='submit' className='button'>
-            Delete
-          </button>
-        </form>
-      ) : null}
-    </div>
-  );
+  return <JokeDisplay joke={data.joke} isOwner={data.isOwner} />;
 }
 
 export function CatchBoundary() {

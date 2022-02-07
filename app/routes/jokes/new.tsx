@@ -1,19 +1,21 @@
 import {
   ActionFunction,
+  Form,
   json,
   Link,
   LoaderFunction,
   redirect,
   useActionData,
   useCatch,
+  useTransition,
 } from 'remix';
-import { ObjectId } from 'mongodb';
-import { getDbCollections } from '../../db/db.server';
+import { getDbCollections, GetObjectId } from '../../db/db.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
 import { validateStringField } from '../../utils/validation';
 import { getUserId, requireUserId } from '../../utils/session.server';
+import { JokeDisplay } from '../../components/joke';
 
-type ActionData = {
+interface ActionData {
   formError?: string;
   fieldErrors?: {
     name: string | undefined;
@@ -23,7 +25,22 @@ type ActionData = {
     name: string;
     content: string;
   };
-};
+}
+
+function getFieldErrors(name: string, content: string) {
+  return {
+    name: validateStringField({
+      value: name,
+      minLength: 2,
+      message: `That joke's name is too short`,
+    }),
+    content: validateStringField({
+      value: content,
+      minLength: 10,
+      message: `That joke is too short`,
+    }),
+  };
+}
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -48,18 +65,7 @@ export const action: ActionFunction = async ({ request }) => {
   });
 
   // validate input
-  const fieldErrors = {
-    name: validateStringField({
-      value: name,
-      minLength: 2,
-      message: `That joke's name is too short`,
-    }),
-    content: validateStringField({
-      value: content,
-      minLength: 10,
-      message: `That joke is too short`,
-    }),
-  };
+  const fieldErrors = getFieldErrors(name, content);
   const fields = {
     name,
     content,
@@ -74,7 +80,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   // create
   const createdJokeResult = await jokesCollection.insertOne({
-    _id: new ObjectId(),
+    _id: new GetObjectId(),
     ...fields,
     jokesterId: userId,
     updatedAt: new Date(),
@@ -96,11 +102,29 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function NewJokeRoute() {
   const actionData = useActionData<ActionData>();
+  const transition = useTransition();
+
+  if (transition.submission) {
+    const formData = transition.submission.formData;
+    const name = getFormDataStringField({
+      fieldName: 'name',
+      formData,
+    });
+    const content = getFormDataStringField({
+      fieldName: 'content',
+      formData,
+    });
+    const fieldErrors = getFieldErrors(name, content);
+
+    if (!fieldErrors.content && !fieldErrors.name) {
+      return <JokeDisplay joke={{ name, content }} isOwner={true} canDelete={false} />;
+    }
+  }
 
   return (
     <div>
       <p>Add your own hilarious joke</p>
-      <form method='post'>
+      <Form method='post'>
         <div>
           <label>
             Name:{' '}
@@ -146,7 +170,7 @@ export default function NewJokeRoute() {
             Add
           </button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }
