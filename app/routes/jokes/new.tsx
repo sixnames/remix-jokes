@@ -1,5 +1,6 @@
 import {
   ActionFunction,
+  Form,
   json,
   Link,
   LoaderFunction,
@@ -7,8 +8,7 @@ import {
   useActionData,
   useCatch,
 } from 'remix';
-import { ObjectId } from 'mongodb';
-import { getDbCollections } from '../../db/db.server';
+import { getDbCollections, GetObjectId } from '../../db/db.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
 import { validateStringField } from '../../utils/validation';
 import { getUserId, requireUserId } from '../../utils/session.server';
@@ -74,7 +74,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   // create
   const createdJokeResult = await jokesCollection.insertOne({
-    _id: new ObjectId(),
+    _id: new GetObjectId(),
     ...fields,
     jokesterId: userId,
     updatedAt: new Date(),
@@ -100,7 +100,7 @@ export default function NewJokeRoute() {
   return (
     <div>
       <p>Add your own hilarious joke</p>
-      <form method='post'>
+      <Form method='post'>
         <div>
           <label>
             Name:{' '}
@@ -146,7 +146,7 @@ export default function NewJokeRoute() {
             Add
           </button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

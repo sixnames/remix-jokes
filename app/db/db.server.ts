@@ -1,4 +1,4 @@
-import { Collection, Db, MongoClient } from 'mongodb';
+import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
 import { JokeModel, UserModel } from './dbModels';
 import { COL_JOKES, COL_USERS } from './collectionNames';
 
@@ -59,3 +59,5 @@ export async function getDbCollections(): Promise<DbCollectionsPayloadInterface>
     usersCollection: () => db.collection<UserModel>(COL_USERS),
   };
 }
+
+export const GetObjectId = ObjectId;

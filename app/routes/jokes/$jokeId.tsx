@@ -1,6 +1,7 @@
 import { JokeModel } from '../../db/dbModels';
 import {
   ActionFunction,
+  Form,
   Link,
   LoaderFunction,
   MetaFunction,
@@ -9,8 +10,7 @@ import {
   useLoaderData,
   useParams,
 } from 'remix';
-import { ObjectId } from 'mongodb';
-import { getDbCollections } from '../../db/db.server';
+import { getDbCollections, GetObjectId } from '../../db/db.server';
 import { getUserId, requireUserId } from '../../utils/session.server';
 import { getFormDataStringField } from '../../utils/formDataUtils';
 
@@ -21,6 +21,7 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData | undefined }) =
       description: 'No joke found',
     };
   }
+
   return {
     title: `"${data.joke.name}" joke`,
     description: `Enjoy the "${data.joke.name}" joke and much more`,
@@ -37,7 +38,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const collections = await getDbCollections();
   const jokesCollection = collections.jokesCollection();
   const joke = await jokesCollection.findOne({
-    _id: new ObjectId(params.jokeId),
+    _id: new GetObjectId(`${params.jokeId}`),
   });
 
   if (!joke) {
@@ -61,7 +62,7 @@ export const action: ActionFunction = async ({ request, params }) => {
   });
   if (method === 'delete') {
     const userId = await requireUserId(request);
-    const jokeId = new ObjectId(params.jokeId);
+    const jokeId = new GetObjectId(params.jokeId);
 
     const joke = await jokesCollection.findOne({
       _id: jokeId,
@@ -92,12 +93,12 @@ export default function JokeRoute() {
       <p>{data.joke.content}</p>
       <Link to='.'>{data.joke.name} Permalink</Link>
       {data.isOwner ? (
-        <form method='post'>
+        <Form method='post'>
           <input type='hidden' name='_method' value='delete' />
           <button type='submit' className='button'>
             Delete
           </button>
-        </form>
+        </Form>
       ) : null}
     </div>
   );
