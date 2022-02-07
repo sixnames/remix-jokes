@@ -8,8 +8,12 @@ import {
   Outlet,
   useCatch,
   Meta,
+  LoaderFunction,
+  useLoaderData,
 } from 'remix';
 import stylesLink from './styles/tailwind.min.css';
+import { NonFlashOfWrongThemeEls, Theme, ThemeProvider, useTheme } from './context/theme-provider';
+import { getThemeSession } from './utils/theme.server';
 
 export const links: LinksFunction = () => {
   return [
@@ -34,20 +38,38 @@ export const meta: MetaFunction = () => {
   };
 };
 
-function Document({
+type LoaderData = {
+  theme: Theme | null;
+};
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const themeSession = await getThemeSession(request);
+
+  const data: LoaderData = {
+    theme: themeSession.getTheme(),
+  };
+
+  return data;
+};
+
+interface DocumentInterface {
+  title?: string;
+}
+
+const Document: React.FC<DocumentInterface> = ({
   children,
   title = `Remix: So great, it's funny!`,
-}: {
-  children: React.ReactNode;
-  title?: string;
-}) {
+}) => {
+  const data = useLoaderData<LoaderData>();
+  const [theme] = useTheme();
   return (
-    <html lang='en'>
+    <html lang='en' className={theme ? theme : undefined}>
       <head>
         <meta charSet='utf-8' />
         <Meta />
         <title>{title}</title>
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body>
         {children}
@@ -56,13 +78,16 @@ function Document({
       </body>
     </html>
   );
-}
+};
 
 export default function App() {
+  const data = useLoaderData<LoaderData>();
   return (
-    <Document>
-      <Outlet />
-    </Document>
+    <ThemeProvider specifiedTheme={data.theme}>
+      <Document>
+        <Outlet />
+      </Document>
+    </ThemeProvider>
   );
 }
 
@@ -70,25 +95,30 @@ const errorClassName = 'bg-red text-white';
 
 export function CatchBoundary() {
   const caught = useCatch();
-
+  const data = useLoaderData<LoaderData>();
   return (
-    <Document title={`${caught.status} ${caught.statusText}`}>
-      <div className={errorClassName}>
-        <h1>
-          {caught.status} {caught.statusText}
-        </h1>
-      </div>
-    </Document>
+    <ThemeProvider specifiedTheme={data.theme}>
+      <Document title={`${caught.status} ${caught.statusText}`}>
+        <div className={errorClassName}>
+          <h1>
+            {caught.status} {caught.statusText}
+          </h1>
+        </div>
+      </Document>
+    </ThemeProvider>
   );
 }
 
 export function ErrorBoundary({ error }: { error: Error }) {
+  const data = useLoaderData<LoaderData>();
   return (
-    <Document title='Uh-oh!'>
-      <div className={errorClassName}>
-        <h1>App Error</h1>
-        <pre>{error.message}</pre>
-      </div>
-    </Document>
+    <ThemeProvider specifiedTheme={data.theme}>
+      <Document title='Uh-oh!'>
+        <div className={errorClassName}>
+          <h1>App Error</h1>
+          <pre>{error.message}</pre>
+        </div>
+      </Document>
+    </ThemeProvider>
   );
 }
