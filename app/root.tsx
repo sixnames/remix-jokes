@@ -69,7 +69,7 @@ const Document: React.FC<DocumentInterface> = ({
         <Meta />
         <title>{title}</title>
         <Links />
-        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data?.theme)} />
       </head>
       <body>
         {children}
@@ -83,7 +83,7 @@ const Document: React.FC<DocumentInterface> = ({
 export default function App() {
   const data = useLoaderData<LoaderData>();
   return (
-    <ThemeProvider specifiedTheme={data.theme}>
+    <ThemeProvider specifiedTheme={data?.theme}>
       <Document>
         <Outlet />
       </Document>
@@ -97,7 +97,7 @@ export function CatchBoundary() {
   const caught = useCatch();
   const data = useLoaderData<LoaderData>();
   return (
-    <ThemeProvider specifiedTheme={data.theme}>
+    <ThemeProvider specifiedTheme={data?.theme}>
       <Document title={`${caught.status} ${caught.statusText}`}>
         <div className={errorClassName}>
           <h1>
@@ -111,8 +111,9 @@ export function CatchBoundary() {
 
 export function ErrorBoundary({ error }: { error: Error }) {
   const data = useLoaderData<LoaderData>();
+
   return (
-    <ThemeProvider specifiedTheme={data.theme}>
+    <ThemeProvider specifiedTheme={data?.theme}>
       <Document title='Uh-oh!'>
         <div className={errorClassName}>
           <h1>App Error</h1>
