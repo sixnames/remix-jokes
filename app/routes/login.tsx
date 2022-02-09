@@ -1,14 +1,9 @@
-import type { ActionFunction, LinksFunction, MetaFunction } from 'remix';
+import type { ActionFunction, MetaFunction } from 'remix';
 import { useActionData, json, Link, useSearchParams, Form } from 'remix';
-import stylesUrl from '../styles/login.css';
 import { getFormDataStringField } from '../utils/formDataUtils';
 import { validateStringField } from '../utils/validation';
 import { getDbCollections } from '../db/db.server';
 import { createUserSession, login, register } from '../utils/session.server';
-
-export const links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: stylesUrl }];
-};
 
 export const meta: MetaFunction = () => {
   return {

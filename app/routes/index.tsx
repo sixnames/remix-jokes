@@ -1,15 +1,5 @@
-import type { LinksFunction, MetaFunction } from 'remix';
+import type { MetaFunction } from 'remix';
 import { Link } from 'remix';
-import stylesUrl from '../styles/index.css';
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: 'stylesheet',
-      href: stylesUrl,
-    },
-  ];
-};
 
 export const meta: MetaFunction = () => {
   return {
@@ -20,7 +10,7 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <div className='container'>
+    <div className='flex'>
       <div className='content'>
         <h1>
           Remix <span>Jokes!</span>

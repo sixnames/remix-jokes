@@ -1,18 +1,8 @@
-import type { LinksFunction, LoaderFunction } from 'remix';
+import type { LoaderFunction } from 'remix';
 import { Outlet, Link, useLoaderData, Form } from 'remix';
-import stylesUrl from '../styles/jokes.css';
 import { getDbCollections } from '../db/db.server';
 import { UserModel } from '../db/dbModels';
 import { getUser } from '../utils/session.server';
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: 'stylesheet',
-      href: stylesUrl,
-    },
-  ];
-};
 
 type LoaderData = {
   user: UserModel | null;
